@@ -1,11 +1,9 @@
-
-const fs = require('fs');
-const Terser = require('terser');
-
+const fs = require("fs");
+const Terser = require("terser");
 
 //*****************************************************************************
 
-const package = require('./package.json');
+const package = require("./package.json");
 
 const src = `${__dirname}/src`;
 const dist = `${__dirname}/dist`;
@@ -29,38 +27,35 @@ const code = [
   "src/layers/Shadows.js",
   "src/layers/Picking.js",
   "src/Debug.js",
-  "src/adapter.js"
+  "src/adapter.js",
 ];
-
 
 //*****************************************************************************
 
-function joinFiles (files) {
+function joinFiles(files) {
   if (!files.push) {
     files = [files];
   }
-  return files.map(file => fs.readFileSync(file)).join('\n');
+  return files.map((file) => fs.readFileSync(file)).join("\n");
 }
 
-function copy (srcFile, distFile) {
-  fs.writeFileSync(distFile, fs.readFileSync(srcFile, 'utf8'));
+function copy(srcFile, distFile) {
+  fs.writeFileSync(distFile, fs.readFileSync(srcFile, "utf8"));
 }
-
 
 //*****************************************************************************
 
-function buildEngine (name, customJS) {
+function buildEngine(name, customJS) {
   const commonJS = joinFiles(code);
 
-  let js = commonJS + '\n' + customJS;
+  let js = commonJS + "\n" + customJS;
   js = js.replace(/\{\{VERSION\}\}/g, package.version);
-  js = `const OSMBuildings = (function() {\n${js}\n return OSMBuildings;\n}());`;
+  js = `const ${name}OSMBuildings = (function() {\n${js}\n return ${name}OSMBuildings;\n}());`;
 
   fs.writeFileSync(`${dist}/OSMBuildings-${name}.debug.js`, js);
   fs.writeFileSync(`${dist}/OSMBuildings-${name}.js`, Terser.minify(js).code);
   copy(`${src}/engines/index-${name}.html`, `${dist}/index-${name}.html`);
 }
-
 
 //*****************************************************************************
 
@@ -68,7 +63,6 @@ if (!fs.existsSync(dist)) {
   fs.mkdirSync(dist);
 }
 
-buildEngine('Leaflet', fs.readFileSync(`${src}/engines/Leaflet.js`));
-buildEngine('OpenLayers', fs.readFileSync(`${src}/engines/OpenLayers.js`));
+buildEngine("Leaflet", fs.readFileSync(`${src}/engines/Leaflet.js`));
 
 copy(`${src}/OSMBuildings.css`, `${dist}/OSMBuildings.css`);
